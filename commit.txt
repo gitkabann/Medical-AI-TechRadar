@@ -1,0 +1,2 @@
+初始化后端骨架：FastAPI 项目、基础路由 /health、项目配置（pydantic-settings）——在config和.env里加了一些参数。
+增加数据合同JSON Schema，固定了以后使用的一些数据格式

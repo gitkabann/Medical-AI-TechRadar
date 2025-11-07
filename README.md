@@ -176,3 +176,64 @@ ExportTool（导出 Markdown / PDF）
 [2] arXiv: 2405.12345v1  
 [3] GitHub: github.com/med-ai/3d-lungseg  
 [4] ClinicalTrials.gov: NCT05678910
+
+# 数据协议 JSON Schema
+## Task
+```bash
+{
+  "task_id": "task_9b12eac9d2e4",
+  "topic": "CT 肺结节分割",
+  "scope": "default",
+  "depth": 1,
+  "state": "RUNNING",
+  "progress": 0.4,
+  "steps": [
+    {
+      "step_id": "step_a13c",
+      "name": "Planner",
+      "state": "DONE",
+      "message": "任务拆解完成",
+      "meta": {"duration_s": 0.6}
+    },
+    {
+      "step_id": "step_b41f",
+      "name": "RAG",
+      "state": "RUNNING",
+      "message": "正在检索文献",
+      "meta": {"current": 2, "total": 5}
+    }
+  ],
+  "artifacts": ["artifact_73bd"],
+  "timestamps": {
+    "created_at": "2025-11-07T10:20:45Z",
+    "updated_at": "2025-11-07T10:22:03Z"
+  }
+}
+```
+## Step
+```bash
+{
+  "step_id": "step_a13c",
+  "name": "Planner",
+  "state": "DONE",
+  "message": "任务拆解完成",
+  "meta": {"duration_s": 0.6}
+}
+```
+
+## Artifact
+```bash
+{
+  "artifact_id": "artifact_73bd",
+  "task_id": "task_9b12eac9d2e4",
+  "type": "MARKDOWN",
+  "mime": "text/markdown",
+  "uri": "/artifact/task_9b12eac9d2e4/report.md",
+  "inline": "# CT 肺结节分割报告\n...",
+  "meta": {
+    "size_kb": 12.4,
+    "source_count": 18,
+    "created_by": "WriterAgent"
+  }
+}
+```
