@@ -1,2 +1,2 @@
-初始化后端骨架：FastAPI 项目、基础路由 /health、项目配置（pydantic-settings）——在config和.env里加了一些参数。
-增加数据合同JSON Schema，固定了以后使用的一些数据格式
+设计 API 契约：/task（创建任务）、/status（查询进度）、/report（产物拉取）请求/响应 schema。
+过 config.py、logger.py、utils.py 三个核心组件，完成“全局配置统一 + 依赖自动注入 + 可控执行行为（带重试与超时）”。
