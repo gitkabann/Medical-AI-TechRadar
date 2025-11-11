@@ -1,2 +1,11 @@
-设计 API 契约：/task（创建任务）、/status（查询进度）、/report（产物拉取）请求/响应 schema。
-过 config.py、logger.py、utils.py 三个核心组件，完成“全局配置统一 + 依赖自动注入 + 可控执行行为（带重试与超时）”。
+增加app\models\document.py,定义：
+    文献/代码/试验三类文档的统一元数据 schema：DocumentMetadata (source、date、url、section)
+    Chunk的schema：DocumentChunk (chunk_id、content、metadata)
+
+增加简单的chunking.py，实现：
+    按双换行或句号分段
+    返回若干 DocumentChunk 对象
+
+增加简单的chroma_client.py，实现：
+    ingest()：chunk加入chroma数据库
+    query()：检索问题对应的chunk
