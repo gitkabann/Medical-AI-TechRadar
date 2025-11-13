@@ -1,3 +1,5 @@
-在app\tools\schema.py 用pydantic定义了Search 工具的输入和输出schema。
-在app\tools\dummy_search.py 实现了假的搜索工具，供Agent调用。
-在app\agents\react_agent.py 实现了简陋的Agent，能提问，调用搜索工具，得到答案。
+app/agents/writer.py: 用来根据题目和内容和模板写出报告
+app/agents/pipeline_dummy.py: 
+    plan：用于计划任务流，决定调用哪些工具，将参数传给各个工具，决定 depth / scope（轻量 or 深度报告），决定 DAG（Agent 的执行顺序）
+    query_dummy_rag：假RAG搜索，输入topic给出相关信息
+    run_pipeline：pipeline，整合所有步骤
