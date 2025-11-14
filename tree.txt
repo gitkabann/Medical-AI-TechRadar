@@ -1,0 +1,124 @@
+卷 系统 的文件夹 PATH 列表
+卷序列号为 2A8F-4433
+C:.
+│  .env
+│  commit.txt
+│  README.md
+│  requirements.txt
+│  test.py
+│  tree.txt
+│  
+├─.pytest_cache
+│  │  .gitignore
+│  │  CACHEDIR.TAG
+│  │  README.md
+│  │  
+│  └─v
+│      └─cache
+│              lastfailed
+│              nodeids
+│              
+├─.vscode
+│      launch.json
+│      settings.json
+│      
+├─api
+│  │  api_README.md
+│  │  main.py
+│  │  __init__.py
+│  │  
+│  ├─models
+│  │      models_README.md
+│  │      report.py
+│  │      status.py
+│  │      task.py
+│  │      
+│  ├─routes
+│  │      main.py
+│  │      toutes_README.md
+│  │      __init__.py
+│  │      
+│  └─__pycache__
+│          main.cpython-313.pyc
+│          __init__.cpython-313.pyc
+│          
+├─app
+│  │  app_README.md
+│  │  __init__.py
+│  │  
+│  ├─agents
+│  │      pipeline_dummy.py
+│  │      react_agent.py
+│  │      writer.py
+│  │      __init__.py
+│  │      
+│  ├─core
+│  │  │  config.py
+│  │  │  core_README.md
+│  │  │  logger.py
+│  │  │  utils.py
+│  │  │  __init__.py
+│  │  │  
+│  │  └─__pycache__
+│  │          config.cpython-313.pyc
+│  │          logger.cpython-313.pyc
+│  │          __init__.cpython-313.pyc
+│  │          
+│  ├─models
+│  │  │  artifact.py
+│  │  │  base.py
+│  │  │  document.py
+│  │  │  enums.py
+│  │  │  error.py
+│  │  │  models_README.md
+│  │  │  task.py
+│  │  │  
+│  │  └─__pycache__
+│  │          document.cpython-313.pyc
+│  │          
+│  ├─tools
+│  │  │  chroma_client.py
+│  │  │  chunking.py
+│  │  │  dummy_search.py
+│  │  │  schema.py
+│  │  │  tools_README.md
+│  │  │  __init__.py
+│  │  │  
+│  │  └─__pycache__
+│  │          chroma_client.cpython-313.pyc
+│  │          chunking.cpython-313.pyc
+│  │          dummy_search.cpython-313.pyc
+│  │          schema.cpython-313.pyc
+│  │          __init__.cpython-313.pyc
+│  │          
+│  └─__pycache__
+│          __init__.cpython-313.pyc
+│          
+├─chroma_db
+│  │  chroma.sqlite3
+│  │  
+│  └─6ee005e2-d9bc-40ee-af39-1ed787004da5
+│          data_level0.bin
+│          header.bin
+│          length.bin
+│          link_lists.bin
+│          
+├─readme
+│      image.png
+│      
+├─tests
+│  │  tests_README.md
+│  │  test_api.py
+│  │  test_chroma.py
+│  │  test_tools.py
+│  │  
+│  └─__pycache__
+│          test_api.cpython-313-pytest-9.0.1.pyc
+│          test_chroma.cpython-313-pytest-9.0.1.pyc
+│          test_chroma.cpython-313.pyc
+│          test_tools.cpython-313-pytest-9.0.1.pyc
+│          test_tools.cpython-313.pyc
+│          
+└─__pycache__
+        test.cpython-313.pyc
+        

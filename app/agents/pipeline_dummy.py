@@ -18,7 +18,7 @@ def plan(topic: str) -> dict:
         ]
     }
 
-def query_dummy_rag(topic: str):
+def query_dummy_rag(topic: str) -> list[dict]:
     """RAG 的伪数据；Day5 只需要假数据跑通流程"""
     logger.info("执行假数据 RAG 检索…")
 
@@ -37,7 +37,7 @@ def query_dummy_rag(topic: str):
         },
     ]
 
-def run_pipeline(topic: str):
+def run_pipeline(topic: str) -> str:
     logger.info(f"开始最小流水线执行（MVP）：{topic}")
 
     # 1. 生成计划

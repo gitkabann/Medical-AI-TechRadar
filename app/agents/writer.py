@@ -1,4 +1,4 @@
-def generate_markdown_report(topic: str, findings: list[dict]):
+def generate_markdown_report(topic: str, findings: list[dict]) -> str:
     """最小 Writer：把 RAG 的伪数据写成 Markdown 报告"""
     md = f"# {topic} 调研报告\n\n"
 

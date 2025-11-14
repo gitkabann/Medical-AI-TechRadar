@@ -26,23 +26,91 @@ Agent 执行轨迹可视化：展示计划树、工具调用链、引用高亮�
 ## 📁 项目结构
 
 ```bash
-medical-ai-techradar
- ┣ api/              → FastAPI 接口层（/health, /task, /status, /report）
- ┣ app/
- ┃ ┣ core/           → 全局配置、日志、异常处理（pydantic-settings）
- ┃ ┣ models/         → Task / Step / Artifact / 枚举类型等数据模型
- ┃ ┣ store/          → 存储实现（memory → postgres/mongo）
- ┃ ┣ tools/          → Agent 工具模块（Search / Fetch / Trials / Export 等）
- ┃ ┣ agents/         → 多 Agent 子模块（planner / crawler / rag / writer 等）
- ┃ ┣ orchestrator/   → 调度器（Redis Streams、状态机、消费者组）
- ┃ ┣ memory/         → 任务与事实记忆（SummaryBuffer / 向量缓存）
- ┃ ┣ eval/           → 指标评估与 /metrics 导出
- ┃ ┗ ui/             → Next.js 前端（最小演示界面）
- ┣ tests/            → 单元与集成测试（pytest）
- ┣ docker-compose.yml→ 一键启动各服务（api/chroma/redis/ui）
- ┣ requirements.txt  → Python 依赖列表
- ┣ .env.example      → 环境变量示例
- ┗ README.md         → 项目说明文档
+ Medical-AI-TechRadar/
+├── .env
+├── commit.txt
+├── README.md
+├── requirements.txt
+├── test.py
+├── tree.txt
+
+├── .pytest_cache/
+│   └── v/cache/...    # pytest 缓存文件
+
+├── .vscode/
+│   ├── launch.json
+│   └── settings.json
+
+├── api/                      # FastAPI 层（路由 + 接口模型）
+│   ├── api_README.md
+│   ├── main.py               # FastAPI 入口
+│   ├── __init__.py
+│   ├── models/
+│   │   ├── task.py           # /task 输入输出格式
+│   │   ├── status.py         # /status 输出格式
+│   │   ├── report.py         # /report 输出格式
+│   │   └── models_README.md
+│   └── routes/
+│       ├── main.py           # 具体 API 路由
+│       ├── routes_README.md
+│       └── __init__.py
+
+├── app/                      # 后端核心逻辑（Agent / 工具 / 模型 / 配置）
+│   ├── app_README.md
+│   ├── __init__.py
+│
+│   ├── agents/               # Agent 相关模块
+│   │   ├── pipeline_dummy.py # 最小流水线（计划→假检索→假writer）
+│   │   ├── react_agent.py    # LangChain ReAct 示例
+│   │   ├── writer.py         # Writer 生成 Markdown
+│   │   └── __init__.py
+│
+│   ├── core/                 # 全局配置、日志、工具函数
+│   │   ├── config.py         # pydantic-settings 配置
+│   │   ├── logger.py         # 统一日志封装
+│   │   ├── utils.py          # 超时/重试等基础工具
+│   │   ├── core_README.md
+│   │   └── __init__.py
+│
+│   ├── models/               # 内部数据模型（任务/文档/错误等）
+│   │   ├── artifact.py
+│   │   ├── base.py
+│   │   ├── document.py       # 文档分块结构
+│   │   ├── enums.py          # TaskState 等枚举
+│   │   ├── error.py
+│   │   ├── task.py           # 内部 Task 模型（非 API 输入）
+│   │   └── models_README.md
+│
+│   ├── tools/                # 工具模块（Chroma、DummySearch、分块）
+│   │   ├── chroma_client.py  # Chroma ingest/query
+│   │   ├── chunking.py       # 文档分块器
+│   │   ├── dummy_search.py   # 假搜索工具（用于 Agent 测试）
+│   │   ├── schema.py         # SearchInput / Output
+│   │   ├── tools_README.md
+│   │   └── __init__.py
+
+│   └── __pycache__/ ...      # 自动生成，无需关心
+
+├── chroma_db/                # Chroma 本地数据库
+│   ├── chroma.sqlite3
+│   └── 6ee005e2-d9bc-40ee-af39-1ed787004da5/
+│       ├── data_level0.bin
+│       ├── header.bin
+│       ├── length.bin
+│       └── link_lists.bin
+
+├── readme/
+│   └── image.png
+
+├── tests/                    # pytest 单元测试
+│   ├── tests_README.md
+│   ├── test_api.py
+│   ├── test_chroma.py
+│   ├── test_tools.py
+│   └── __pycache__/
+
+└── __pycache__/
+
 
 
 
