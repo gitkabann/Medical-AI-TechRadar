@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Debug current file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

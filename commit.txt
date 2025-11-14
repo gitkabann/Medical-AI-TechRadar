@@ -3,3 +3,6 @@ app/agents/pipeline_dummy.py:
     plan：用于计划任务流，决定调用哪些工具，将参数传给各个工具，决定 depth / scope（轻量 or 深度报告），决定 DAG（Agent 的执行顺序）
     query_dummy_rag：假RAG搜索，输入topic给出相关信息
     run_pipeline：pipeline，整合所有步骤
+用pytest做自动测试。
+    tests/test_api.py: 测试api/main.py能否跑通
+    tests/test_tools.py: 测试DummySearchTool
