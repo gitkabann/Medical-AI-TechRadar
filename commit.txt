@@ -1,1 +1,10 @@
-增加异常错误处理
+在\app\tools\chunking.py增加chunk_text功能，简单的按长度分块，唯一的优点是附上了metadata（source、pmid、title、date…）
+增加\app\tools\pubmed_client.py：
+    fetch_pubmed实现：
+        search_resp：用要搜索的topic从API获取搜索得到的多个内容ID组成的列表
+        fetch_resp：用ids列表获取对应的信息，比如摘要
+    用parse_pubmed_xml将fech_pubmed结果中的xml数据：
+        解析成字典列表
+    用ingest_pubmed调用以上功能，实现：
+        抓取 PubMed → 分块 → 入库
+增加tests\test_pubmed.py，用来测试今天的功能。

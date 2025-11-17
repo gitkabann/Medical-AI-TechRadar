@@ -1,12 +1,9 @@
-from fastapi import FastAPI
-from typing import Union
+from app.tools.chroma_client import collection
 
-app = FastAPI()
+results = collection.get(include=["documents", "metadatas"])
 
-@app.get('/')
-def test():
-    return '测试测试'
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+for i in range(len(results["ids"])):
+    print("\n================ Chroma Chunk ================")
+    print("ID:", results["ids"][i])
+    print("Content:", results["documents"][i])
+    print("Metadata:", results["metadatas"][i])

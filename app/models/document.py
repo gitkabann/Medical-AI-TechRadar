@@ -6,7 +6,7 @@ class DocumentMetadata(BaseModel):
     """统一的文档元数据"""
     source: str
     url: Optional[str] = None
-    date : Optional[datetime] = None
+    date: Optional[str] = Field(default=None, strict=True)
     section: Optional[str] = None # 章节、段落标题等
 
 class DocumentChunk(BaseModel):
