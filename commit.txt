@@ -1,9 +1,16 @@
-增加\app\tools\arxiv_client.py：
-    fetch_arxiv实现：
-        params：构建传给arxivAPI的url参数
-        从arxivAPI获得XML格式的查询结果
-    用parse_arxiv_xml将fetch_arxiv结果中的xml数据：
-        解析成字典列表
-    用ingest_arxiv调用以上功能，实现：
-        抓取 Arxiv → 分块 → 入库
-增加tests\test_pubmed.py，用来测试今天的功能。
+增加\app\tools\github_client.py：
+    _auth_headers:
+        启动启用认证，免得限流
+    search_repos：
+        GitHub 的搜索 API 搜项目：按关键词 + Star 数排序。
+    fetch_readme：
+        获取 README（base64 编码，需要解码）
+    fetch_latest_release:
+        获取最近 Release
+    fetch_commit_frequency:
+        用 GitHub API 统计最近 X 周 commit 数。
+    clean_text:
+        简单清洗：去掉过长文本、去空行、多余空格
+    用ingest_github调用以上功能，实现：
+        GitHub → 文档 → chunk → 入库 Chroma
+增加tests\test_github.py，用来测试今天的功能。
