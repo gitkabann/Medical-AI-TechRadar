@@ -1,9 +1,19 @@
-from app.tools.chroma_client import collection
+from time import sleep
+import asyncio
 
-results = collection.get(include=["documents", "metadatas"])
+async def test1():
+    print("Test 1 start")
+    await asyncio.sleep(1)
+    print("Test 1 end")
 
-for i in range(len(results["ids"])):
-    print("\n================ Chroma Chunk ================")
-    print("ID:", results["ids"][i])
-    print("Content:", results["documents"][i])
-    print("Metadata:", results["metadatas"][i])
+async def test2():
+    print("Test 2 start")
+    await asyncio.sleep(2)
+    print("Test 2 end")
+
+async def main():
+    await test1()
+    await test2()
+
+if __name__ == "__main__":
+    asyncio.run(main())

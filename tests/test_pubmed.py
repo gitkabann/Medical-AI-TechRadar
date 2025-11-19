@@ -1,6 +1,5 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 import pytest
 
 from app.tools.pubmed_client import ingest_pubmed
