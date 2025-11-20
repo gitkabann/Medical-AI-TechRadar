@@ -3,6 +3,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from app.agents.writer import generate_markdown_report
 
 from app.core.logger import get_logger
+from app.tools.rag_query import query_rag
+from app.agents.writer import generate_markdown_report
 
 logger = get_logger(__name__)
 
@@ -44,19 +46,19 @@ def run_pipeline(topic: str) -> str:
     plan_result = plan(topic)
     logger.info(f"计划生成完成：{plan_result['steps']}")
 
-    # 2. 假 RAG 检索
-    findings = query_dummy_rag(topic)
-    logger.info(f"RAG 检索返回 {len(findings)} 条内容")
+    # 2. RAG 检索
+    results = query_rag(topic, top_k=5)
+    logger.info(f"RAG 检索返回 {len(results)} 条内容")
 
     # 3. 生成 MD 报告
-    md = generate_markdown_report(topic, findings)
+    md = generate_markdown_report(topic, results)
     logger.info("Markdown 报告生成完成")
 
     return md
 
 
 if __name__ == "__main__":
-    topic = "CT 肺结节分割"
+    topic = "息肉检测"
     md = run_pipeline(topic)
 
     print("\n===== 最终输出（Markdown） =====\n")
