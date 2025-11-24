@@ -124,7 +124,7 @@ def clean_text(text: str, max_len: int = 5000) -> str:
 
 async def ingest_github(keyword: str, top_n: int = 5) -> int:
     """
-    GitHub → 文档 → chunk → 入库 Chroma
+    GitHub → 分块 → 入库
     """
     repos = await search_repos(keyword, limit=top_n)
     all_chunks: List[DocumentChunk] = []

@@ -1,8 +1,2 @@
-增加app\core\data_clean.py
-    is_valid_url：验证url准确性
-    clean_metadata：修复 metadata：空字段、非法字段、URL 修复
-    is_valid_chunk：过滤空摘要、无内容、只有符号的 chunk
-修改app\tools\chroma_client.py，添加data_clean的功能
-增加app\core\data_clean.py
-    真正的 CLI
-保留app\tools\chunking.py里的simple_chunk给test_chroma用
+增加app\tools\trials_client.py，从clinicaltrials.gov获取信息
+增加tests\test_trials.py，测试trials_client.py
