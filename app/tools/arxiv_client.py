@@ -6,7 +6,7 @@ from app.models.document import DocumentChunk
 
 logger = get_logger(__name__)
 
-async def fetch_arxiv(topic: str, max_results: int = 20) -> List[Dict]:
+async def fetch_arxiv(topic: str, max_results: int = 10) -> List[Dict]:
     """
     搜索 arXiv 文献，返回 title/abstract/date/url/doi 等信息。
     arXiv 使用 Atom XML，需要手动解析。

@@ -1,7 +1,24 @@
 from typing import List
 from app.models.document import DocumentChunk, DocumentMetadata
 from app.models.base import gen_id
-
+import re
+def simple_chunk(text: str, source: str, url: str = None) -> List[DocumentChunk]:#保留给test_chroma.py使用
+    """
+    简单分块器：按双换行或句号分段。
+    返回若干 DocumentChunk 对象。
+    """
+    parts = re.split(r'\n\n|。', text)
+    chunks = []
+    for i, part in enumerate(parts):
+        if len(part.strip()) < 5:  # 太短的段落略过
+            continue
+        meta = DocumentMetadata(source=source, url=url)
+        chunks.append(DocumentChunk(
+            chunk_id=f"{source}_{i}",
+            content=part.strip(),
+            metadata=meta
+        ))
+    return chunks
 def chunk_text(text: str, source: str, metadata_extra: dict = None) -> List[DocumentChunk]:
     """
     基于固定长度的分块器：每 300 字为一块。

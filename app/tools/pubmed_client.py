@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 
 BASE_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 
-async def fetch_pubmed(topic: str, retmax: int = 20) -> List[Dict]:
+async def fetch_pubmed(topic: str, retmax: int = 10) -> List[Dict]:
     """搜索 PubMed 并返回论文摘要信息"""
     async with httpx.AsyncClient(timeout=10.0) as client: # AsyncClient 是一个异步 HTTP 会话对象，用来发起 async 的网络请求。
         try:

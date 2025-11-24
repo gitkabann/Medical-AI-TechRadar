@@ -3,6 +3,7 @@ from chromadb.utils import embedding_functions
 from app.core.config import settings
 from app.core.logger import get_logger
 from app.models.document import DocumentChunk
+from app.core.data_clean import clean_metadata, is_valid_chunk
 
 logger = get_logger(__name__)
 
@@ -19,11 +20,25 @@ collection = client.get_or_create_collection(
 def ingest(chunks: list[DocumentChunk]):
     """将分块内容写入 Chroma 向量库"""
     logger.info(f"开始入库 {len(chunks)} 个文档分块")
-    ids = [c.chunk_id for c in chunks]
-    docs = [c.content for c in chunks]
-    metas = [c.metadata.model_dump(exclude_none=True) for c in chunks] #model_dump() 方法将 Pydantic 模型转换为字典
+    clean_chunks = []
+    seen_ids = set()
+
+    for c in chunks:
+        if c.chunk_id in seen_ids:
+            continue
+        seen_ids.add(c.chunk_id)
+        
+        if not is_valid_chunk(c.content):
+            continue
+        
+        c.metadata = clean_metadata(c.metadata.model_dump(exclude_none=True))
+        clean_chunks.append(c)
+
+    ids = [c.chunk_id for c in clean_chunks]
+    docs = [c.content for c in clean_chunks]
+    metas = [c.metadata for c in clean_chunks] #model_dump() 方法将 Pydantic 模型转换为字典
     collection.add(ids=ids, documents=docs, metadatas=metas)
-    logger.info("Chroma 入库完成")
+    logger.info("Chroma 入库完成，共写入 %d 个分块", len(clean_chunks))
 
 def query(text: str, n_results: int = 3):
     """从 Chroma 中查询相似内容"""
