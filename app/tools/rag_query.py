@@ -3,9 +3,12 @@ from app.tools.chroma_client import collection, embedding_fn
 from app.models.document import DocumentChunk
 
 def query_rag(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-    """最简单的 RAG：从 Chroma 取 top_k 片段并返回 metadata。"""
-    query_embedding = embedding_fn(query)#转向量
+    """RAG 查询：将结果按 trial / others 分组返回"""
+
+    # 编码 Query 得向量
+    query_embedding = embedding_fn(query)
     
+    # 检索 top_k
     results = collection.query(
         query_embeddings=query_embedding,
         n_results=top_k,
@@ -16,11 +19,16 @@ def query_rag(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
     metas = results["metadatas"][0]
     dists = results["distances"][0]
 
-    rag_results = []
+    rag_chunks = []
     for doc, meta, dist in zip(docs, metas, dists):
-        rag_results.append({
+        rag_chunks.append({
             "content": doc,
             "metadata": meta,
             "score": float(dist),
         })
-    return rag_results
+
+    # 按 trial / others 分组
+    trial_chunks = [c for c in rag_chunks if c["metadata"]["source"] == "ClinicalTrials"]
+    other_chunks = [c for c in rag_chunks if c["metadata"]["source"] != "ClinicalTrials"]
+    
+    return trial_chunks, other_chunks
