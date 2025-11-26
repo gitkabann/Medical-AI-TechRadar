@@ -27,8 +27,11 @@ async def fetch_arxiv(topic: str, max_results: int = 10) -> List[Dict]:
             resp = await client.get(ARXIV_API, params=params)
             xml_text = resp.text
 
-        return parse_arxiv_xml(xml_text)
+            papers = parse_arxiv_xml(xml_text)
+            logger.info(f"[arXiv] 状态码：{resp.status_code}，解析到 {len(papers)} 篇论文（topic='{topic}'）")
 
+            return papers
+            
     except Exception as e:
         logger.error(f"ArXiv 请求失败: {e}")
         return []

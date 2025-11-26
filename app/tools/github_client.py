@@ -45,6 +45,7 @@ async def search_repos(keyword: str, limit: int = 10) -> List[Dict]:
             "updated_at": repo["updated_at"],
         })
 
+    logger.info(f"[GitHub] 状态码：{resp.status_code}，找到 {len(repos)} 个仓库（keyword='{keyword}'）")
     return repos
 
 
@@ -56,9 +57,9 @@ async def fetch_readme(full_name: str) -> str:
 
     async with httpx.AsyncClient(timeout=10.0) as client:
         resp = await client.get(url, headers=_auth_headers())
-        print("fetch_readme status:", resp.status_code)     # 调试
-        print("fetch_readme headers:", resp.headers)        # 调试
-        print("fetch_readme text preview:", resp.text[:200])# 调试
+        # print("fetch_readme status:", resp.status_code)     # 调试
+        # print("fetch_readme headers:", resp.headers)        # 调试
+        # print("fetch_readme text preview:", resp.text[:200])# 调试
         if resp.status_code != 200:
             return ""
         data = resp.json()

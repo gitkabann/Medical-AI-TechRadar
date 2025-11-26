@@ -1,10 +1,7 @@
-增加app\agents\fact_enricher.py：
-    extract_key_facts：把每条检索到的 RAG 片段的文本按句子拆开，相同的句子合并到字典的同一个key中，作为“事实”，对应的value记录哪些文本有相同的句子。
-    classify_facts：如果extract_key_facts保存的fact_map中的某个句子对应的source大于2，就保存到“结论”列表，否则保存到“需验证”列表。
-    enrich_with_trials：把 ClinicalTrials 的结构化字段拼成好看的 Markdown bullet 列表，让 LLM 或用户更容易看懂“哪些临床试验支持这个主题”。
-修改app\tools\rag_query.py，分类rag_chunks为trial_chunks和other_chunks
-完全修改app\agents\writer.py：
-    将rag_query分类的trial_chunks和other_chunks中的trial_chunks用enrich_with_trials整理。
-    用上述extract_key_facts和classify_facts获得conclusion, to_verify。
-    拼接conclusion和to_verify和来源url。
-添加tests\test_fact_enricher.py，用于测试以上内容。
+新增app\core\async_utils.py：
+    with_retry：对任意 async 函数执行：超时 + 重试 + 指数退避。
+    RateLimiter：限制全局并发，例如并行最多 5 个任务。（暂时不用）
+修改app\agents\pipeline_dummy.py：
+    ingest_trials_safe：用asyncio.to_thread包裹同步的ingest_trials，这样可以和其他的ingest一起异步。
+    ingest_all_sources：异步获取所有api信息并chunk入库
+新增tests\test_async_pipeline.py，用于测试以上内容。
