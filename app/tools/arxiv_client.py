@@ -25,6 +25,10 @@ async def fetch_arxiv(topic: str, max_results: int = 10) -> List[Dict]:
 
         async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
             resp = await client.get(ARXIV_API, params=params)
+            print(f"📡 [ArXiv] HTTP Status: {resp.status_code}")
+            if resp.status_code != 200:
+                print(f"❌ ArXiv 返回错误状态码。内容摘要: {resp.text[:200]}")
+                return []
             xml_text = resp.text
 
             papers = parse_arxiv_xml(xml_text)

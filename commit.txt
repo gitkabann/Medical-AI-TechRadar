@@ -1,7 +1,6 @@
-新增app\core\async_utils.py：
-    with_retry：对任意 async 函数执行：超时 + 重试 + 指数退避。
-    RateLimiter：限制全局并发，例如并行最多 5 个任务。（暂时不用）
-修改app\agents\pipeline_dummy.py：
-    ingest_trials_safe：用asyncio.to_thread包裹同步的ingest_trials，这样可以和其他的ingest一起异步。
-    ingest_all_sources：异步获取所有api信息并chunk入库
-新增tests\test_async_pipeline.py，用于测试以上内容。
+新增app\tools\pdf_exporter.py，
+    save_markdown_as_pdf：用于将Markdown导出为PDF。
+修改app\agents\writer.py，让 writer 输出带摘要、对比要点等结构化 Markdown。
+新增api\routes\artifact.py，
+    download_artifact：用FastAPI编写的后端API路由模块，定义了一个HTTP GET接口，允许用户根据task_id下载服务器上对应的PDF文件。
+修改app\tools\chroma_client.py，避免空chunk导致入库报错。

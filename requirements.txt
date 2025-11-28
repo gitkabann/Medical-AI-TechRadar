@@ -2,3 +2,7 @@ fastapi
 "uvicorn[standard]"
 pydantic
 pydantic-settings
+httpx
+beautifulsoup4
+markdown
+weasyprint

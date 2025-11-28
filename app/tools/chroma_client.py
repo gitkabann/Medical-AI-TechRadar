@@ -1,3 +1,4 @@
+# app\tools\chroma_client.py
 import chromadb
 from chromadb.utils import embedding_functions
 from app.core.config import settings
@@ -19,6 +20,9 @@ collection = client.get_or_create_collection(
 
 def ingest(chunks: list[DocumentChunk]):
     """将分块内容写入 Chroma 向量库"""
+    if not chunks:
+        print("⚠️ [Chroma] 收到空数据列表，跳过入库。")
+        return
     logger.info(f"开始入库 {len(chunks)} 个文档分块")
     clean_chunks = []
     seen_ids = set()
