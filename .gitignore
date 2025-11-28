@@ -1,1 +1,3 @@
 ".env" 
+"app\artifacts\*.md"
+"app\artifacts\*.pdf"
