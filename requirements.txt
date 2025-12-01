@@ -1,8 +1,9 @@
 fastapi
-"uvicorn[standard]"
+uvicorn[standard]
 pydantic
 pydantic-settings
 httpx
 beautifulsoup4
 markdown
 weasyprint
+redis>=5.0.0
