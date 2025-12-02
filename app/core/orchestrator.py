@@ -28,7 +28,7 @@ class Orchestrator:
         """
         # 1. 记录初始状态 (使用 Redis Hash)
         state_key = f"task:{task_id}"
-        bus.redis.hset(state_key, mapping={#使用 Redis Hash (哈希表) 存储任务的初始元数据，包括 PENDING 状态、创建时间、原始 Topic 和参数。
+        bus.redis.hset(state_key, mapping={#hset是Redis中哈希的写入方法，存储任务的初始元数据，包括状态、创建时间、Topic和参数。
             "status": TaskStatus.PENDING,
             "topic": topic,
             "created_at": time.time(),

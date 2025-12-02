@@ -25,7 +25,7 @@ class EventBus:
 
     def publish(self, topic: Topic, payload: Dict[str, Any]) -> str:
         """
-        发布消息到 Stream
+        发布消息(事件)到 Stream
         """
         # Redis Streams 只能存简单的 key-value，复杂对象需序列化
         message = {"payload": json.dumps(payload)}# 序列化payload为字符串，保存为字典
@@ -49,9 +49,10 @@ class EventBus:
 
     def consume(self, topic: Topic, group: str, consumer_name: str, count=1, block=2000):
         """
-        作为消费者组的一员读取消息
+        读取该消息并返回
         block: 阻塞等待毫秒数
         """
+        # 实际使用方法：while True: msgs = bus.consume(Topic.CRAWLER, "group1", "consumer1", count=10, block=5000)
         # group: 消费者组名
         # consumer_name: 消费者实例名（每个消费者组内唯一）
         # topic: 要消费的频道, > 表示读取“在此消费者组中尚未被分发给其他消费者”的新消息
@@ -79,4 +80,4 @@ class EventBus:
         print(f"✅ [Bus] Ack {topic} {msg_id}")
 
 # 全局单例
-bus = EventBus()
+bus = EventBus()#在导入这个模块时，自动实例化一个 EventBus 类的对象

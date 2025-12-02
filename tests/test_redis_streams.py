@@ -9,7 +9,7 @@ def test_streams_flow():
     # 1. 模拟用户创建一个任务
     task_id = str(uuid4())
     topic = "肺结节检测"
-    orchestrator.create_task(task_id, topic, {"depth": "shallow"})
+    orchestrator.create_task(task_id, topic, {"depth": "shallow"})#记录状态，分发消息
     
     # 2. 验证状态是否已写入 Redis
     status = orchestrator.get_task_status(task_id)
@@ -17,9 +17,9 @@ def test_streams_flow():
 
     # 3. 模拟 Worker 消费消息 (Crawler)
     print("👷 模拟 Worker 正在监听 stream:crawler...")
-    messages = bus.consume(Topic.CRAWLER, "group_orchestrator", "worker_1", count=1, block=3000)
+    messages = bus.consume(Topic.CRAWLER, "group_orchestrator", "worker_1", count=1, block=3000)#监听消息，阻塞等待3秒
     
-    if messages:
+    if messages:#监听到消息
         msg = messages[0]
         print(f"📥 Worker 收到消息: {msg}")
         

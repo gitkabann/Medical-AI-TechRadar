@@ -1,16 +1,22 @@
-增加依赖项: redis>=5.0.0
-增加app\core\event_bus.py: 
-    Topic: 定义系统中的 Topic（频道），便于各个功能模块（Agent）分别接收信息。
-    EventBus: 
-        publish: 将payload（负载）转成字典message，选择频道，存储message键值对，返回消息ID
-        create_group: 在指定的topic频道创建名为group的消费者组，便于平均分配任务。设定从头处理历史信息，设定无stram就自动创建。
-        consume: 作为消费者组的一员，阻塞式地从指定 Stream 读取尚未处理的新消息，并返回解析后的数据列表。
-        ack: 向 Stream 确认（ACK）消息已成功处理，通知 Redis 移动该消费者组的读取进度（Offset）。
-增加app\core\orchestrator.py:
-    TaskStatus: 任务状态机，定义一个任务在其生命周期中可能处于的几个离散状态。
-    Orchestrator:
-        _init_groups: 确保所有 Topic 和 Group 都就绪
-        create_task: 记录任务的初始状态（PENDING）到 Redis Hash，将状态更新为 RUNNING，随后发布任务消息到目标 Stream（Topic），启动分布式工作流。
-        get_task_status: 从 Redis Hash 中，根据 task_id 获取并返回该任务的当前所有状态信息，供用户或其他模块查询。
-增加tests\test_redis_streams.py:
-    模拟用户提交任务的一次性触发脚本。它只发布初始消息，然后结束。
+增加app\models\protocol.py：Agent 之间传递的标准包裹，统一 Agent 之间传递的数据格式，避免传参地狱。
+增加app\core\base_worker.py：定义了所有 Agent的模板：
+    is_processed：幂等性检查：如果 task_id + step 已经标记为完成，则跳过。
+    mark_processed：标记步骤完成，有效期 24h
+    @abstractmethod的process：业务逻辑，返回传递给下一个 Agent 的 Payload
+    run: 
+        1.bus.consume：根据阻塞时间规定的频率读取消息
+        2.isinstance(raw_payload...): 检查raw_payload是否是字典，如果是就直接传给data_dict，不是就用json.loads转成字典再传
+        3.幂等性过滤，如果任务已经完成就bus.ack
+        4.执行具体业务逻辑
+        5.标记完成
+        6.发布下一步 (如果有)
+增加app\workers\agents.py：
+    解耦核心任务： 将单体脚本拆分为四个独立 Agent Workers (Planner, Crawler, RAG, Writer)。
+    通信机制： Agent 之间通过 Redis Streams 异步通信。
+    可靠性保障： 在 BaseWorker 中实现基于 task_id + step 的 幂等性检查，防止任务重复执行。
+    数据契约： 定义 TaskPayload 作为标准通信包裹。
+    启动方式： 通过 system_runner.py 使用多线程启动所有 Worker 模拟分布式环境。
+增加system_runner.py:
+    模拟分布式： 使用 Python threading 模块，在独立线程中启动所有 Agent Worker，模拟分布式环境。
+    任务发送： 自动生成 task_id 并构造初始 TaskPayload，将其发布到 Topic.PLANNER 启动整个工作流。
+    用途： 方便在本地环境中测试 Agent 链条的通信和幂等性逻辑。
