@@ -2,8 +2,6 @@ import asyncio
 from app.core.base_worker import BaseWorker
 from app.core.event_bus import Topic
 from app.models.protocol import TaskPayload
-
-# 引入原有工具
 from app.tools.pubmed_client import ingest_pubmed
 from app.tools.arxiv_client import ingest_arxiv
 from app.tools.github_client import ingest_github
@@ -11,6 +9,7 @@ from app.tools.trials_client import ingest_trials
 from app.tools.rag_query import query_rag
 from app.agents.writer import generate_markdown_report
 from app.tools.pdf_exporter import save_markdown_as_pdf
+from app.core.state_manager import state_manager
 
 # 1. Planner Agent: 选择和决定任务的下一个 Agent。（目前是透传）
 class PlannerAgent(BaseWorker):
@@ -20,6 +19,8 @@ class PlannerAgent(BaseWorker):
     def process(self, payload: TaskPayload) -> TaskPayload:
         # 这里未来做 Planning，现在直接透传
         print(f"🧠 [Planner] 规划任务: {payload.topic}")
+        # 初始化任务记录
+        state_manager.init_task(payload.task_id, payload.topic, payload.params)
         return payload.next_step("crawling_started")
 
 # 2. Crawler Agent: 负责并发抓取

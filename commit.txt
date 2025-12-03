@@ -1,22 +1,14 @@
-增加app\models\protocol.py：Agent 之间传递的标准包裹，统一 Agent 之间传递的数据格式，避免传参地狱。
-增加app\core\base_worker.py：定义了所有 Agent的模板：
-    is_processed：幂等性检查：如果 task_id + step 已经标记为完成，则跳过。
-    mark_processed：标记步骤完成，有效期 24h
-    @abstractmethod的process：业务逻辑，返回传递给下一个 Agent 的 Payload
-    run: 
-        1.bus.consume：根据阻塞时间规定的频率读取消息
-        2.isinstance(raw_payload...): 检查raw_payload是否是字典，如果是就直接传给data_dict，不是就用json.loads转成字典再传
-        3.幂等性过滤，如果任务已经完成就bus.ack
-        4.执行具体业务逻辑
-        5.标记完成
-        6.发布下一步 (如果有)
-增加app\workers\agents.py：
-    解耦核心任务： 将单体脚本拆分为四个独立 Agent Workers (Planner, Crawler, RAG, Writer)。
-    通信机制： Agent 之间通过 Redis Streams 异步通信。
-    可靠性保障： 在 BaseWorker 中实现基于 task_id + step 的 幂等性检查，防止任务重复执行。
-    数据契约： 定义 TaskPayload 作为标准通信包裹。
-    启动方式： 通过 system_runner.py 使用多线程启动所有 Worker 模拟分布式环境。
-增加system_runner.py:
-    模拟分布式： 使用 Python threading 模块，在独立线程中启动所有 Agent Worker，模拟分布式环境。
-    任务发送： 自动生成 task_id 并构造初始 TaskPayload，将其发布到 Topic.PLANNER 启动整个工作流。
-    用途： 方便在本地环境中测试 Agent 链条的通信和幂等性逻辑。
+增加app\core\db.py，引入 MongoDB 持久化存储配置，作为任务状态的“记忆”。
+    创建 DBClient 类，创建一个与 MongoDB 服务器的连接实例，选中一个特定的数据库"medical_tech_radar"
+    定义 tasks, steps, artifacts 三个集合。
+    为 steps 集合创建唯一索引 ("task_id", 1), ("step_name", 1)，以确保任务步骤的幂等性和原子性，这是断点续传的关键基础。
+增加app\core\state_manager.py，封装了保存任务状态的 MongoDB 逻辑，实现 Worker 的“检查点”和“记忆”功能。
+    init_task：初始化任务记录，用update_one查找id对应任务，更新或创建任务记录。
+    is_step_completed：用find_one检查步骤是否完成。
+    save_checkpoint：保存步骤的输入和输出作为检查点。
+    mark_task_done：标记任务最终完成。
+修改app\core\base_worker.py，用state_manager中的MongoDB逻辑代替了昨天用Redis做的mark_processed和is_processed方案，解决了Redis标记的消息：
+    1. 怕重启：Redis 的数据存在内存里。如果重启 Docker 或者 Redis 崩溃了，信息会丢失，系统会认为所有任务都没做过，导致重复执行。
+    2. 保存“数据”，而不只是“状态”：MongoDB不仅存了“做完了”的状态，还存了 output_data（爬下来的内容），方便检查或恢复。
+修改app\workers\agents.py，在PlannerAgent里增加了init_task初始化任务记录。
+增加check_db.py，验证了今天MongoDB的有效性。
