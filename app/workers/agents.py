@@ -1,3 +1,4 @@
+# app/workers/agents.py
 import asyncio
 from app.core.base_worker import BaseWorker
 from app.core.event_bus import Topic
@@ -34,18 +35,39 @@ class CrawlerAgent(BaseWorker):
 
         async def run_crawlers():
             # 并发执行
-            await asyncio.gather(
+            results = await asyncio.gather(
                 ingest_pubmed(topic),
                 ingest_arxiv(topic),
-                ingest_github(topic, top_n=1)
+                ingest_github(topic, top_n=1),
+                return_exceptions=True 
             )
-            # ingest_trials 目前是同步的
-            ingest_trials(topic)
+            # 解析结果，统计成功/失败
+            sources = ["PubMed", "ArXiv", "GitHub"]
+            status_report = {}
+            
+            for source, res in zip(sources, results):
+                if isinstance(res, Exception):
+                    print(f"⚠️ [Crawler] {source} 抓取失败: {res}")
+                    status_report[source] = "Failed"
+                else:
+                    print(f"✅ [Crawler] {source} 抓取成功，数量: {res}")
+                    status_report[source] = "Success"
 
-        # 在同步方法中运行异步代码
-        asyncio.run(run_crawlers())
+            # 处理 Trials (同步函数，单独包 try-except)
+            try:
+                ingest_trials(topic)
+                status_report["Trials"] = "Success"
+            except Exception as e:
+                print(f"⚠️ [Crawler] Trials 抓取失败: {e}")
+                status_report["Trials"] = "Failed"
+
+            return status_report
         
-        return payload.next_step("crawling_done", {"crawl_status": "success"})
+        # 运行爬虫
+        status = asyncio.run(run_crawlers())
+        # 只要不是全部失败，就认为是部分成功
+        # 将抓取状态传递给下游
+        return payload.next_step("crawling_done", {"crawl_status": status})
 
 # 3. RAG Agent: 负责检索
 class RagAgent(BaseWorker):

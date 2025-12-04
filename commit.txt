@@ -1,14 +1,6 @@
-增加app\core\db.py，引入 MongoDB 持久化存储配置，作为任务状态的“记忆”。
-    创建 DBClient 类，创建一个与 MongoDB 服务器的连接实例，选中一个特定的数据库"medical_tech_radar"
-    定义 tasks, steps, artifacts 三个集合。
-    为 steps 集合创建唯一索引 ("task_id", 1), ("step_name", 1)，以确保任务步骤的幂等性和原子性，这是断点续传的关键基础。
-增加app\core\state_manager.py，封装了保存任务状态的 MongoDB 逻辑，实现 Worker 的“检查点”和“记忆”功能。
-    init_task：初始化任务记录，用update_one查找id对应任务，更新或创建任务记录。
-    is_step_completed：用find_one检查步骤是否完成。
-    save_checkpoint：保存步骤的输入和输出作为检查点。
-    mark_task_done：标记任务最终完成。
-修改app\core\base_worker.py，用state_manager中的MongoDB逻辑代替了昨天用Redis做的mark_processed和is_processed方案，解决了Redis标记的消息：
-    1. 怕重启：Redis 的数据存在内存里。如果重启 Docker 或者 Redis 崩溃了，信息会丢失，系统会认为所有任务都没做过，导致重复执行。
-    2. 保存“数据”，而不只是“状态”：MongoDB不仅存了“做完了”的状态，还存了 output_data（爬下来的内容），方便检查或恢复。
-修改app\workers\agents.py，在PlannerAgent里增加了init_task初始化任务记录。
-增加check_db.py，验证了今天MongoDB的有效性。
+修改app\models\protocol.py，增加全局最大步数限制，增加记录深度功能
+修改app\core\base_worker.py，增加死循环熔断保护：检查深度是否超过最大限制
+增加app\core\chaos.py，混沌猴子，有一个注入故障的函数装饰器。当环境变量 ENABLE_CHAOS=true 时，它会随机抛出异常
+修改app\tools\arxiv_client.py，埋混沌猴子
+修改app\workers\agents.py，在CrawlerAgent中增加了记录错误功能，并保证一个爬虫出错不会导致整个任务失败。
+增加tests\test_chaos.py，测试以上混沌猴子和部分成功功能。

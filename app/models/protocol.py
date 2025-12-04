@@ -1,6 +1,9 @@
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional, List
 
+# 全局最大步数限制
+MAX_STEPS = 10
+
 class TaskPayload(BaseModel):
     """
     Agent 之间传递的标准包裹
@@ -11,11 +14,14 @@ class TaskPayload(BaseModel):
     params: Dict[str, Any] = {} # 原始参数
     data: Dict[str, Any] = {}   # 上一步产生的数据
     history: List[str] = []     # 执行轨迹摘要
+    depth: int = 0  # 当前深度，用于限制最大步数
 
     def next_step(self, step_name: str, new_data: Dict[str, Any] = None) -> "TaskPayload":
         """生成下一步的 Payload"""
         new_payload = self.model_copy(deep=True)#深拷贝TaskPayload
         new_payload.step = step_name # 更新步骤名
+        new_payload.depth += 1 # 深度加一
+        
         if new_data:
             new_payload.data.update(new_data)# 合并数据，不存在的 key 会被添加，存在的 key 会被覆盖
         new_payload.history.append(f"{self.step} -> {step_name}")# 记录执行轨迹

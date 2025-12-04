@@ -1,9 +1,11 @@
+# app/core/base_worker.py
 import json
 import traceback
 from abc import ABC, abstractmethod
 from app.core.event_bus import bus, Topic
 from app.models.protocol import TaskPayload
 from app.core.state_manager import state_manager
+from app.models.protocol import TaskPayload, MAX_STEPS
 
 class BaseWorker(ABC):
     def __init__(self, 
@@ -34,6 +36,13 @@ class BaseWorker(ABC):
                         # 兼容直接传 dict 或 pydantic json
                         data_dict = raw_payload if isinstance(raw_payload, dict) else json.loads(raw_payload)
                         payload = TaskPayload(**data_dict)
+                        
+                        #  == 死循环熔断保护：检查深度是否超过最大限制 ==
+                        if payload.depth > MAX_STEPS:
+                            print(f"🛑 [熔断] 任务 {payload.task_id} 超过最大步数限制 ({payload.depth} > {MAX_STEPS})。已中止。")
+                            bus.ack(self.listen_topic, self.group_name, msg_id)
+                            continue
+                        #  ============================================
                         
                         print(f"📥 [{self.__class__.__name__}] Got task: {payload.task_id} (Step: {payload.step})")
 

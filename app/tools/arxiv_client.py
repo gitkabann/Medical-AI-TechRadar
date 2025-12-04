@@ -3,10 +3,18 @@ from typing import List, Dict
 from app.core.logger import get_logger
 from app.tools.chunking import chunk_text
 from app.models.document import DocumentChunk
+from app.core.chaos import chaos  # 导入混沌
 
 logger = get_logger(__name__)
 
 async def fetch_arxiv(topic: str, max_results: int = 10) -> List[Dict]:
+    # === 埋雷 ===
+    try:
+        chaos.simulate("ArXiv_API") 
+    except ConnectionError as e:
+        print(f"⚠️ {e}")
+        raise e 
+    # ============
     """
     搜索 arXiv 文献，返回 title/abstract/date/url/doi 等信息。
     arXiv 使用 Atom XML，需要手动解析。
@@ -25,7 +33,7 @@ async def fetch_arxiv(topic: str, max_results: int = 10) -> List[Dict]:
 
         async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
             resp = await client.get(ARXIV_API, params=params)
-            print(f"📡 [ArXiv] HTTP Status: {resp.status_code}")
+            print(f"📡 [ArXiv] HTTP 状态码: {resp.status_code}")
             if resp.status_code != 200:
                 print(f"❌ ArXiv 返回错误状态码。内容摘要: {resp.text[:200]}")
                 return []
