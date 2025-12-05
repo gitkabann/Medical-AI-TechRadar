@@ -1,6 +1,13 @@
-修改app\models\protocol.py，增加全局最大步数限制，增加记录深度功能
-修改app\core\base_worker.py，增加死循环熔断保护：检查深度是否超过最大限制
-增加app\core\chaos.py，混沌猴子，有一个注入故障的函数装饰器。当环境变量 ENABLE_CHAOS=true 时，它会随机抛出异常
-修改app\tools\arxiv_client.py，埋混沌猴子
-修改app\workers\agents.py，在CrawlerAgent中增加了记录错误功能，并保证一个爬虫出错不会导致整个任务失败。
-增加tests\test_chaos.py，测试以上混沌猴子和部分成功功能。
+修改app\core\logger.py：
+    _format_msg:消息构造器，将所有任务 ID、状态、计数器等信息组合成一个字符串，作为最终日志的 %(message)s 部分输出
+修改app\core\error_handler.py，让它同时支持 API 报错回执和 Worker 故障决策。
+    保留了 app_exception_handler：FastAPI 依然可以用它来返回 JSON 错误响应。
+    新增了 WorkerErrorHandler：专门给 BaseWorker 用。它不返回 JSON，而是返回字符串指令，告诉 Worker 接下来该怎么操作 Redis 队列。
+    网络/瞬态错误 -> 建议重试
+    数据/逻辑错误 -> 建议跳过
+    熔断/策略拦截 -> 建议跳过
+    基础设施严重错误 -> 建议中止
+    未知错误 -> 默认记录并跳过 (防止阻塞队列)
+修改app\core\base_worker.py：
+    加入上述logger，logger.info代替了print
+    用 WorkerErrorHandler捕获错误，决定接下来如何操作Redis队列。
