@@ -63,7 +63,7 @@ def parse_arxiv_xml(xml_text: str) -> List[Dict]:
     for entry in root.findall("atom:entry", ns):
 
         title = entry.find("atom:title", ns).text or ""
-        print("Title:", title)
+        # print("Title:", title)
         abstract = entry.find("atom:summary", ns).text or ""
 
         date = entry.find("atom:published", ns).text or ""

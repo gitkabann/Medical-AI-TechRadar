@@ -1,7 +1,7 @@
 # app/workers/agents.py
 import asyncio
 from app.core.base_worker import BaseWorker
-from app.core.event_bus import Topic
+from app.core.event_bus import bus, Topic
 from app.models.protocol import TaskPayload
 from app.tools.pubmed_client import ingest_pubmed
 from app.tools.arxiv_client import ingest_arxiv
@@ -11,6 +11,7 @@ from app.tools.rag_query import query_rag
 from app.agents.writer import generate_markdown_report
 from app.tools.pdf_exporter import save_markdown_as_pdf
 from app.core.state_manager import state_manager
+from app.core.memory import task_memory
 
 # 1. Planner Agent: 选择和决定任务的下一个 Agent。（目前是透传）
 class PlannerAgent(BaseWorker):
@@ -19,9 +20,27 @@ class PlannerAgent(BaseWorker):
 
     def process(self, payload: TaskPayload) -> TaskPayload:
         # 这里未来做 Planning，现在直接透传
-        print(f"🧠 [Planner] 规划任务: {payload.topic}")
+        topic = payload.topic
+        print(f"🧠 [Planner] 规划任务: {topic}")
         # 初始化任务记录
         state_manager.init_task(payload.task_id, payload.topic, payload.params)
+
+        # === 记忆检索 =============
+        # 尝试回忆是否做过类似任务
+        past_knowledge = task_memory.recall_task(topic)
+        if past_knowledge:
+            print(f"[Planner] 发现类似任务记忆: {past_knowledge['topic']}")
+            print("[Planner] 策略调整: 跳过抓取，复用历史知识。")
+            # 将历史数据注入 Payload
+            payload.data["rag_context"] = [{
+                "content": f"【历史知识复用】\n之前的研究总结：{past_knowledge['summary']}",
+                "metadata": {"source": "Memory", "type": "history"}
+            }]
+            # 直接发布到 Writer
+            next_payload = payload.next_step("memory_hit")
+            bus.publish(Topic.WRITER, next_payload.model_dump())
+            return None # 阻止后续流程
+        # ===========================
         return payload.next_step("crawling_started")
 
 # 2. Crawler Agent: 负责并发抓取
@@ -109,4 +128,14 @@ class WriterAgent(BaseWorker):
         except Exception:
             print("⚠️ PDF 生成失败，但 MD 已保存")
 
+        # === 存入记忆 ===
+        # 提取报告的前 500 字作为摘要存入记忆库
+        summary = report[:500].replace("#", "").replace("*", "")
+        task_memory.remember_task(
+            topic=topic,
+            summary=summary,
+            artifact_path=pdf_path
+        )
+        print(f"🧠 [Writer] 已将本任务存入长期记忆库。")
+        # ==============================
         return None # 结束

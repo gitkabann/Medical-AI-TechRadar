@@ -1,7 +1,10 @@
 from typing import List, Dict, Any
 from app.tools.chroma_client import collection, embedding_fn
 from app.models.document import DocumentChunk
+from app.core.cache import cache_result
 
+# 缓存 24 小时 (86400秒)，因为向量库更新不频繁
+@cache_result(ttl_seconds=86400, key_prefix="rag")
 def query_rag(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
     """RAG 查询：将结果按 trial / others 分组返回"""
 

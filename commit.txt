@@ -1,13 +1,11 @@
-修改app\core\logger.py：
-    _format_msg:消息构造器，将所有任务 ID、状态、计数器等信息组合成一个字符串，作为最终日志的 %(message)s 部分输出
-修改app\core\error_handler.py，让它同时支持 API 报错回执和 Worker 故障决策。
-    保留了 app_exception_handler：FastAPI 依然可以用它来返回 JSON 错误响应。
-    新增了 WorkerErrorHandler：专门给 BaseWorker 用。它不返回 JSON，而是返回字符串指令，告诉 Worker 接下来该怎么操作 Redis 队列。
-    网络/瞬态错误 -> 建议重试
-    数据/逻辑错误 -> 建议跳过
-    熔断/策略拦截 -> 建议跳过
-    基础设施严重错误 -> 建议中止
-    未知错误 -> 默认记录并跳过 (防止阻塞队列)
-修改app\core\base_worker.py：
-    加入上述logger，logger.info代替了print
-    用 WorkerErrorHandler捕获错误，决定接下来如何操作Redis队列。
+增加app\core\memory.py，新增一个memory的chroma数据库
+    remember_task：任务完成后，将任务主题与结果摘要存入向量库
+    recall_task：回忆：查找是否有距离小于threshold的任务已完成，有则直接返回任务主题与结果摘要
+增加app\core\cache.py，用cache_result装饰器实现：
+    将函数的参数转化为一个固定长度哈希值，结合自定义的前缀名和函数名形成cache_key
+    检查有无相同的cache_key，有就直接返回对应的结果。
+    运行函数，将函数的参数和运行的结果写入redis内存中。
+修改app\workers\agents.py：
+    修改 PlannerAgent，尝试用recall_task检索任务记忆，如果记忆存在，直接将记忆发布给Writer，阻止后续流程。
+    修改 WriterAgent，在得到report后，提取前 500 字作为summary存入记忆库
+修改app\tools\rag_query.py，用cache_result给RAG查询的结果增加24小时的缓存。
