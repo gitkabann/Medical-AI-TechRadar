@@ -42,7 +42,7 @@ def ingest(chunks: list[DocumentChunk]):
     docs = [c.content for c in clean_chunks]
     metas = [c.metadata for c in clean_chunks] #model_dump() 方法将 Pydantic 模型转换为字典
     collection.add(ids=ids, documents=docs, metadatas=metas)
-    logger.info("Chroma 入库完成，共写入 %d 个分块", len(clean_chunks))
+    logger.info(f"Chroma 入库完成，共写入 {len(clean_chunks)} 个分块")
 
 def query(text: str, n_results: int = 3):
     """从 Chroma 中查询相似内容"""

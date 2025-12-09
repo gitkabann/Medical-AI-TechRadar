@@ -1,11 +1,8 @@
-增加app\core\memory.py，新增一个memory的chroma数据库
-    remember_task：任务完成后，将任务主题与结果摘要存入向量库
-    recall_task：回忆：查找是否有距离小于threshold的任务已完成，有则直接返回任务主题与结果摘要
-增加app\core\cache.py，用cache_result装饰器实现：
-    将函数的参数转化为一个固定长度哈希值，结合自定义的前缀名和函数名形成cache_key
-    检查有无相同的cache_key，有就直接返回对应的结果。
-    运行函数，将函数的参数和运行的结果写入redis内存中。
-修改app\workers\agents.py：
-    修改 PlannerAgent，尝试用recall_task检索任务记忆，如果记忆存在，直接将记忆发布给Writer，阻止后续流程。
-    修改 WriterAgent，在得到report后，提取前 500 字作为summary存入记忆库
-修改app\tools\rag_query.py，用cache_result给RAG查询的结果增加24小时的缓存。
+增加app\models\plan.py，其中的ExecutionPlan：
+    定义了多个参数用于描述任务的执行策略，
+    定义了create_light和create_deep两种参数搭配
+修改app\workers\agents.py，
+    根据plan判断是否需要爬github和临床试验
+修改app\tools\arxiv_client.py，确保传入 max_results
+修改app\tools\pubmed_client.py，确保传入 max_results
+修改system_runner.py，测试light和deep两种模式

@@ -87,9 +87,9 @@ def parse_pubmed_xml(xml_text: str) -> List[Dict]:
     return results
 
 
-async def ingest_pubmed(topic: str):
+async def ingest_pubmed(topic: str, max_results: int = 5) -> int:
     """抓取 PubMed → 分块 → 入库"""
-    papers = await fetch_pubmed(topic)
+    papers = await fetch_pubmed(topic, retmax=max_results)
 
     all_chunks: List[DocumentChunk] = []
 

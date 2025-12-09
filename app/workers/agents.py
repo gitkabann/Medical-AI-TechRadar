@@ -12,20 +12,21 @@ from app.agents.writer import generate_markdown_report
 from app.tools.pdf_exporter import save_markdown_as_pdf
 from app.core.state_manager import state_manager
 from app.core.memory import task_memory
+from app.models.plan import ExecutionPlan 
 
-# 1. Planner Agent: 选择和决定任务的下一个 Agent。（目前是透传）
+# 1. Planner Agent: 选择和决定任务的下一个 Agent
 class PlannerAgent(BaseWorker):
     def __init__(self):
         super().__init__(Topic.PLANNER, Topic.CRAWLER)
 
     def process(self, payload: TaskPayload) -> TaskPayload:
-        # 这里未来做 Planning，现在直接透传
         topic = payload.topic
-        print(f"🧠 [Planner] 规划任务: {topic}")
+        depth = payload.params.get("depth", "light")
+        print(f"🧠 [Planner] 收到任务: {topic} | 模式: {depth}")
         # 初始化任务记录
         state_manager.init_task(payload.task_id, payload.topic, payload.params)
 
-        # === 记忆检索 =============
+        # 记忆检索
         # 尝试回忆是否做过类似任务
         past_knowledge = task_memory.recall_task(topic)
         if past_knowledge:
@@ -40,8 +41,17 @@ class PlannerAgent(BaseWorker):
             next_payload = payload.next_step("memory_hit")
             bus.publish(Topic.WRITER, next_payload.model_dump())
             return None # 阻止后续流程
-        # ===========================
-        return payload.next_step("crawling_started")
+        # 制定计划
+        if depth == "deep":
+            plan = ExecutionPlan.create_deep()
+            print("[Planner] 策略: 深度模式 (文献+代码+试验, Top-10)")
+        else:
+            plan = ExecutionPlan.create_light()
+            print("[Planner] 策略: 轻量模式 (文献+试验, Top-3)")
+        # 将计划注入 Payload 的 params 中，供下游使用
+        payload.params["execution_plan"] = plan.model_dump()
+        print(f"🧠 [Planner] 执行计划: {plan.model_dump()}")
+        return payload.next_step("planning_done")
 
 # 2. Crawler Agent: 负责并发抓取
 class CrawlerAgent(BaseWorker):
@@ -50,43 +60,38 @@ class CrawlerAgent(BaseWorker):
 
     def process(self, payload: TaskPayload) -> TaskPayload:
         topic = payload.topic
-        print(f"🕷️ [Crawler] 开始多源抓取: {topic}")
+        # 读取 Planner 制定好的计划
+        plan_data = payload.params.get("execution_plan", ExecutionPlan.create_light().model_dump())
+        plan = ExecutionPlan(**plan_data)
+        print(f"🕷️ [Crawler] 执行计划: {plan.sources} (Limit: {plan.max_items})")
 
         async def run_crawlers():
-            # 并发执行
-            results = await asyncio.gather(
-                ingest_pubmed(topic),
-                ingest_arxiv(topic),
-                ingest_github(topic, top_n=1),
-                return_exceptions=True 
-            )
-            # 解析结果，统计成功/失败
-            sources = ["PubMed", "ArXiv", "GitHub"]
-            status_report = {}
+            tasks = []
+            # 动态构建 DAG (基于 Plan)
+            if "pubmed" in plan.sources:
+                tasks.append(ingest_pubmed(topic, max_results=plan.max_items))
+            if "arxiv" in plan.sources:
+                tasks.append(ingest_arxiv(topic, max_results=plan.max_items))
+            if "github" in plan.sources:
+                tasks.append(ingest_github(topic, top_n=min(3, plan.max_items)))# GitHub 抓取数量不宜过多
             
-            for source, res in zip(sources, results):
-                if isinstance(res, Exception):
-                    print(f"⚠️ [Crawler] {source} 抓取失败: {res}")
-                    status_report[source] = "Failed"
-                else:
-                    print(f"✅ [Crawler] {source} 抓取成功，数量: {res}")
-                    status_report[source] = "Success"
 
-            # 处理 Trials (同步函数，单独包 try-except)
-            try:
-                ingest_trials(topic)
-                status_report["Trials"] = "Success"
-            except Exception as e:
-                print(f"⚠️ [Crawler] Trials 抓取失败: {e}")
-                status_report["Trials"] = "Failed"
+            # 并发执行文献和代码抓取
+            if tasks:
+                await asyncio.gather(*tasks, return_exceptions=True)
+            # 试验抓取 (如果计划启用)
+            if plan.enable_trials:
+                try:
+                    ingest_trials(topic) # 假设 ingest_trials 内部已支持 limit 或暂不支持
+                    print("✅ [Crawler] ClinicalTrials 抓取完成")
+                except Exception as e:
+                    print(f"⚠️ [Crawler] Trials 失败: {e}")
+            else:
+                print("⏭️ [Crawler] 跳过 ClinicalTrials (根据计划)")
 
-            return status_report
+        asyncio.run(run_crawlers())
         
-        # 运行爬虫
-        status = asyncio.run(run_crawlers())
-        # 只要不是全部失败，就认为是部分成功
-        # 将抓取状态传递给下游
-        return payload.next_step("crawling_done", {"crawl_status": status})
+        return payload.next_step("crawling_done", {"plan_executed": plan.mode})
 
 # 3. RAG Agent: 负责检索
 class RagAgent(BaseWorker):

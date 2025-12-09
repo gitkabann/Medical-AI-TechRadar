@@ -85,9 +85,9 @@ def parse_arxiv_xml(xml_text: str) -> List[Dict]:
     return results
 
 
-async def ingest_arxiv(topic: str) -> int:
+async def ingest_arxiv(topic: str, max_results: int = 5) -> int:
     """arXiv → 分块 → 入库"""
-    papers = await fetch_arxiv(topic)
+    papers = await fetch_arxiv(topic, max_results)
     all_chunks: List[DocumentChunk] = []
 
     for paper in papers:
