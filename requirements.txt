@@ -9,3 +9,5 @@ weasyprint
 redis>=5.0.0
 pymongo
 motor
+pandas
+tabulate

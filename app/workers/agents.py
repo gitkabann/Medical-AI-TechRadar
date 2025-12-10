@@ -13,6 +13,7 @@ from app.tools.pdf_exporter import save_markdown_as_pdf
 from app.core.state_manager import state_manager
 from app.core.memory import task_memory
 from app.models.plan import ExecutionPlan 
+from app.tools.data_analyst import generate_comparison_tables
 
 # 1. Planner Agent: 选择和决定任务的下一个 Agent
 class PlannerAgent(BaseWorker):
@@ -117,18 +118,27 @@ class WriterAgent(BaseWorker):
         topic = payload.topic
         context = payload.data.get("rag_context", [])
         
+        print(f"✍️ [Writer] 正在构建数据表格...")
+        # 1. 生成对比表
+        tables_md = generate_comparison_tables(context)
+
         print(f"✍️ [Writer] 正在撰写报告...")
         report = generate_markdown_report(topic, context)
-        
+        final_report = report.replace(
+            "# 医学技术自动化报告：", 
+            f"# 医学技术自动化报告：{topic}\n\n{tables_md}\n\n## 自动生成报告正文" #将表格插在报告最前面
+        )
+
+
         # 保存文件
         task_id = payload.task_id
         md_path = f"report_{task_id}.md"
         with open(md_path, "w", encoding="utf-8") as f:
-            f.write(report)
+            f.write(final_report)
             
         # 导出 PDF
         try:
-            pdf_path = save_markdown_as_pdf(task_id, report)
+            pdf_path = save_markdown_as_pdf(task_id, final_report)
             print(f"🎉 [Writer] 任务完成！PDF: {pdf_path}")
         except Exception:
             print("⚠️ PDF 生成失败，但 MD 已保存")

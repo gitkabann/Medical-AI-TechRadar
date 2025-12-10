@@ -28,26 +28,26 @@ def main():
     
     # --- 2. 发送测试任务 ---
 
-    # 2.1. 测试 Light 模式 (应该很快，且不抓 Trials)
-    task_id_1 = str(uuid4())
-    topic_1 = "covid-19 detection"
+    # # 2.1. 测试 Light 模式 (应该很快，且不抓 Trials)
+    # task_id_1 = str(uuid4())
+    # topic_1 = "covid-19 detection"
     
-    print(f"\n📨 [System] 提交 Light 任务: '{topic_1}' (ID: {task_id_1})")
+    # print(f"\n📨 [System] 提交 Light 任务: '{topic_1}' (ID: {task_id_1})")
     
-    initial_payload_1 = TaskPayload(
-        task_id=task_id_1,
-        topic=topic_1,
-        step="init",
-        params={"depth": "light"}  # <--- Light 模式参数
-    )
-    bus.publish(Topic.PLANNER, initial_payload_1.model_dump())
+    # initial_payload_1 = TaskPayload(
+    #     task_id=task_id_1,
+    #     topic=topic_1,
+    #     step="init",
+    #     params={"depth": "light"}  # <--- Light 模式参数
+    # )
+    # bus.publish(Topic.PLANNER, initial_payload_1.model_dump())
 
-    # 等待 Light 模式任务处理一段时间
-    time.sleep(10) 
+    # # 等待 Light 模式任务处理一段时间
+    # time.sleep(10) 
 
     # 2.2. 测试 Deep 模式 (抓取更多，且包含 Trials)
     task_id_2 = str(uuid4())
-    topic_2 = "lung cancer segmentation"
+    topic_2 = "polyp segmentation"
     
     print(f"\n📨 [System] 提交 Deep 任务: '{topic_2}' (ID: {task_id_2})")
     

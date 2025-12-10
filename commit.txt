@@ -1,8 +1,4 @@
-增加app\models\plan.py，其中的ExecutionPlan：
-    定义了多个参数用于描述任务的执行策略，
-    定义了create_light和create_deep两种参数搭配
-修改app\workers\agents.py，
-    根据plan判断是否需要爬github和临床试验
-修改app\tools\arxiv_client.py，确保传入 max_results
-修改app\tools\pubmed_client.py，确保传入 max_results
-修改system_runner.py，测试light和deep两种模式
+增加app\tools\data_analyst.py：
+    输入：RAG 检索到的 chunks (含 metadata)
+    输出：格式化好的 Markdown 表格字符串
+修改app\workers\agents.py，把表格插到正文前面。
