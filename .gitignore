@@ -1,3 +1,4 @@
-".env" 
-"app\artifacts\*.md"
-"app\artifacts\*.pdf"
+.env
+app\artifacts\*.md
+app\artifacts\*.pdf
+chroma_db\*

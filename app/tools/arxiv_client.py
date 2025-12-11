@@ -1,3 +1,4 @@
+# app\tools\arxiv_client.py
 import httpx
 from typing import List, Dict
 from app.core.logger import get_logger
@@ -61,10 +62,12 @@ def parse_arxiv_xml(xml_text: str) -> List[Dict]:
     results = []
 
     for entry in root.findall("atom:entry", ns):
-
-        title = entry.find("atom:title", ns).text or ""
-        # print("Title:", title)
-        abstract = entry.find("atom:summary", ns).text or ""
+        # === 修复：处理标题中的换行符 ===
+        title_node = entry.find("atom:title", ns)
+        title = title_node.text.strip().replace("\n", " ") if title_node is not None else "Unknown Title"
+        # =============================
+        summary_node = entry.find("atom:summary", ns)
+        abstract = summary_node.text.strip().replace("\n", " ") if summary_node is not None else ""
 
         date = entry.find("atom:published", ns).text or ""
 

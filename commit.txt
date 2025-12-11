@@ -1,4 +1,10 @@
-增加app\tools\data_analyst.py：
-    输入：RAG 检索到的 chunks (含 metadata)
-    输出：格式化好的 Markdown 表格字符串
-修改app\workers\agents.py，把表格插到正文前面。
+增加api\routes\task.py，
+    create_task：当客户端向服务器的 POST /task 路径发送请求时，提交新任务
+        构造初始 Payload
+        初始化 MongoDB 记录
+        推送到 Redis
+    get_task_status：创建一个可以通过 GET /task/{任意ID} 访问的接口。当客户端访问时，用 URL 中的 ID 值执行：
+        从 MongoDB 查询任务状态与轨迹
+修改api\main.py，通过配置配置 CORS，允许前端（端口3000）调后端（端口8000）（跨域调用）
+用npx create-next-app@latest ui在根目录创建了一个Next.js 项目，名叫ui
+用uvicorn api.main:app --reload --port 8000 启动 FastAPI
